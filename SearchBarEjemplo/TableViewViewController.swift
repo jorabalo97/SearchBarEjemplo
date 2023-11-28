@@ -22,7 +22,7 @@ class TableViewViewController: UIViewController {
         searchBar.delegate = self
         tabla.delegate = self
         tabla.dataSource = self
-        personajes = []
+        
         obtenerPersonajesDesdeAPI()
     }
     
@@ -66,58 +66,75 @@ class TableViewViewController: UIViewController {
                                 print("Nombre del personaje: \(name)")
                             }
                         }
+                        DispatchQueue.main.async {
+                            self.tabla.reloadData()
+                        }
+                    }
+                } catch let error as DecodingError {
+                    // Manejar errores específicos de decodificación
+                    switch error {
+                    case .keyNotFound(let key, let context):
+                        print("Error de decodificación: Clave no encontrada - \(key), Contexto: \(context)")
+                    case .typeMismatch(let type, let context):
+                        print("Error de decodificación: Tipo incorrecto - \(type), Contexto: \(context)")
+                    case .valueNotFound(let value, let context):
+                        print("Error de decodificación: Valor no encontrado - \(value), Contexto: \(context)")
+                    default:
+                        print("Error de decodificación: \(error)")
                     }
                 } catch {
-                    print("Error de decodificación: \(error)")
+                    // Manejar otros errores
+                    print("Error: \(error)")
                 }
             }
         }.resume()
     }
 }
-
-// Extensión para calcular el hash MD5
-
-extension String {
-    func hashed(using algorithm:any HashFunction.Type) -> String {
-        let inputData = Data(self.utf8)
-        let hashedData = algorithm.hash(data: inputData)
-        return hashedData.map { String(format: "%02hhx", $0) }.joined()
+    
+    // Extensión para calcular el hash MD5
+    
+    extension String {
+        func hashed(using algorithm:any HashFunction.Type) -> String {
+            let inputData = Data(self.utf8)
+            let hashedData = algorithm.hash(data: inputData)
+            return hashedData.map { String(format: "%02hhx", $0) }.joined()
+        }
     }
-}
 
-
-// Métodos SearchBar
-extension TableViewViewController: UISearchBarDelegate {
-    // Identificar cuando el usuario empieza a escribir
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        personajesFiltrados = []
-        
-        if searchText == "" {
-            personajesFiltrados = personajes
+    
+    // Métodos SearchBar
+    extension TableViewViewController: UISearchBarDelegate {
+        // Identificar cuando el usuario empieza a escribir
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            personajesFiltrados = []
             
-        } else {
-            for personaje in personajes {
-                if personaje.lowercased().contains(searchText.lowercased()) {
-                    personajesFiltrados.append(personaje)
+            if searchText == "" {
+                personajesFiltrados = personajes
+                
+            } else {
+                for personaje in personajes {
+                    if personaje.lowercased().contains(searchText.lowercased()) {
+                        personajesFiltrados.append(personaje)
+                    }
                 }
             }
+            // Actualizar la tabla constantemente cuando se escriba el texto.
+            self.tabla.reloadData()
         }
-        // Actualizar la tabla constantemente cuando se escriba el texto.
-        self.tabla.reloadData()
     }
-}
 
-// Métodos UITableView
-extension TableViewViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return personajesFiltrados.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let celda = tabla.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
+    // Métodos UITableView
+    extension TableViewViewController: UITableViewDelegate, UITableViewDataSource {
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return personajesFiltrados.count
+        }
         
-        celda.textLabel?.text = personajesFiltrados[indexPath.row]
-        
-        return celda
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let celda = tabla.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
+            
+            celda.textLabel?.text = personajesFiltrados[indexPath.row]
+            
+            return celda
+        }
     }
-}
+
