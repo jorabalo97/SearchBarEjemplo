@@ -39,7 +39,7 @@ class TableViewViewController: UIViewController {
         print(hash);
         
         // URL de la API que proporciona los personajes
-        let baseURL = "https://gateway.marvel.com:443/v1/public/characters"
+        let baseURL = "https://gateway.marvel.com:443/v1/public/characters?apikey=4da961812496c30cf73ed692b494f315"
         let limit = 20
         let apiKeyParam = "apikey=\(publicKey)"
         let timestampParam = "ts=\(timestamp)"
