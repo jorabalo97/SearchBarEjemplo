@@ -7,10 +7,18 @@
 import UIKit
 import CryptoKit
 
+class Personaje {
+    var name: String
+
+    init(name: String) {
+        self.name = name
+    }
+}
+
 class TableViewViewController: UIViewController {
     
-    var personajes: [String] = []
-    var personajesFiltrados: [String] = []
+    var personajes: [Personaje] = []
+    var personajesFiltrados: [Personaje] = []
     
     @IBOutlet weak var tabla: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
@@ -35,11 +43,11 @@ class TableViewViewController: UIViewController {
         let timestamp = String(Date().timeIntervalSince1970)
         
         // Construir el hash para la autenticación
-        let hash = "hashImput".hashed(using: Insecure.MD5.self)
-        print(hash);
+        let hash = "hashInput".hashed(using: Insecure.MD5.self)
+        print(hash)
         
         // URL de la API que proporciona los personajes
-        let baseURL = "https://gateway.marvel.com:443/v1/public/characters?apikey=4da961812496c30cf73ed692b494f315"
+        let baseURL = "https://gateway.marvel.com:443/v1/public/characters"
         let limit = 20
         let apiKeyParam = "apikey=\(publicKey)"
         let timestampParam = "ts=\(timestamp)"
@@ -53,7 +61,9 @@ class TableViewViewController: UIViewController {
             return
         }
         
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
+        URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
+            guard let self = self else { return }
+            
             if let data = data {
                 do {
                     // Decodificar los datos JSON
@@ -63,9 +73,11 @@ class TableViewViewController: UIViewController {
                         
                         for result in results {
                             if let name = result["name"] as? String {
-                                print("Nombre del personaje: \(name)")
+                                let nuevoPersonaje = Personaje(name: name)
+                                self.personajes.append(nuevoPersonaje)
                             }
                         }
+                        
                         DispatchQueue.main.async {
                             self.tabla.reloadData()
                         }
@@ -90,51 +102,47 @@ class TableViewViewController: UIViewController {
         }.resume()
     }
 }
-    
-    // Extensión para calcular el hash MD5
-    
-    extension String {
-        func hashed(using algorithm:any HashFunction.Type) -> String {
-            let inputData = Data(self.utf8)
-            let hashedData = algorithm.hash(data: inputData)
-            return hashedData.map { String(format: "%02hhx", $0) }.joined()
-        }
-    }
 
-    
-    // Métodos SearchBar
-    extension TableViewViewController: UISearchBarDelegate {
-        // Identificar cuando el usuario empieza a escribir
-        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-            personajesFiltrados = []
-            
-            if searchText == "" {
-                personajesFiltrados = personajes
-                
-            } else {
-                for personaje in personajes {
-                    if personaje.lowercased().contains(searchText.lowercased()) {
-                        personajesFiltrados.append(personaje)
-                    }
+// Extensión para calcular el hash MD5
+extension String {
+    func hashed(using algorithm: any HashFunction.Type) -> String {
+        let inputData = Data(self.utf8)
+        let hashedData = algorithm.hash(data: inputData)
+        return hashedData.map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+
+// Métodos SearchBar
+extension TableViewViewController: UISearchBarDelegate {
+    // Identificar cuando el usuario empieza a escribir
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        personajesFiltrados = []
+        
+        if searchText == "" {
+            personajesFiltrados = personajes
+        } else {
+            for personaje in personajes {
+                if personaje.name.lowercased().contains(searchText.lowercased()) {
+                    personajesFiltrados.append(personaje)
                 }
             }
-            // Actualizar la tabla constantemente cuando se escriba el texto.
-            self.tabla.reloadData()
         }
+        // Actualizar la tabla constantemente cuando se escriba el texto.
+        self.tabla.reloadData()
     }
+}
 
-    // Métodos UITableView
-    extension TableViewViewController: UITableViewDelegate, UITableViewDataSource {
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return personajesFiltrados.count
-        }
+// Métodos UITableView
+extension TableViewViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return personajesFiltrados.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let celda = tabla.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
         
-        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let celda = tabla.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
-            
-            celda.textLabel?.text = personajesFiltrados[indexPath.row]
-            
-            return celda
-        }
+        celda.textLabel?.text = personajesFiltrados[indexPath.row].name
+        
+        return celda
     }
-
+}
