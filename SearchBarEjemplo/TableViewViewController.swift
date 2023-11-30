@@ -35,7 +35,7 @@ class TableViewViewController: UIViewController {
         let timestamp = String(Date().timeIntervalSince1970)
         
         // Construir el hash para la autenticación
-        let hash = "hash".hashed(using: SHA256.self)
+        let hash = "hashImput".hashed(using: Insecure.MD5.self)
         print(hash);
         
         // URL de la API que proporciona los personajes
