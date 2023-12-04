@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B1575CF72B160E45006E1994 /* CustomCell.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B1575CF62B160E45006E1994 /* CustomCell.storyboard */; };
 		B1DF44112B13CB96000F9852 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DF44102B13CB96000F9852 /* AppDelegate.swift */; };
 		B1DF44132B13CB96000F9852 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DF44122B13CB96000F9852 /* SceneDelegate.swift */; };
 		B1DF44152B13CB96000F9852 /* TableViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DF44142B13CB96000F9852 /* TableViewViewController.swift */; };
@@ -37,7 +36,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B1575CF62B160E45006E1994 /* CustomCell.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CustomCell.storyboard; sourceTree = "<group>"; };
 		B1DF440D2B13CB96000F9852 /* SearchBarEjemplo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SearchBarEjemplo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1DF44102B13CB96000F9852 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B1DF44122B13CB96000F9852 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -108,7 +106,6 @@
 				B1DF44192B13CB97000F9852 /* Assets.xcassets */,
 				B1DF441B2B13CB97000F9852 /* LaunchScreen.storyboard */,
 				B1DF441E2B13CB97000F9852 /* Info.plist */,
-				B1575CF62B160E45006E1994 /* CustomCell.storyboard */,
 			);
 			path = SearchBarEjemplo;
 			sourceTree = "<group>";
@@ -237,7 +234,6 @@
 				B1DF441D2B13CB97000F9852 /* LaunchScreen.storyboard in Resources */,
 				B1DF441A2B13CB97000F9852 /* Assets.xcassets in Resources */,
 				B1DF44182B13CB96000F9852 /* Main.storyboard in Resources */,
-				B1575CF72B160E45006E1994 /* CustomCell.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

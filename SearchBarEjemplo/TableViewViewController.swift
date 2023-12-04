@@ -6,6 +6,7 @@
 //
 import UIKit
 import CryptoKit
+import CommonCrypto
 
 class Personaje {
     var name: String
@@ -35,82 +36,62 @@ class TableViewViewController: UIViewController {
     }
     
     func obtenerPersonajesDesdeAPI() {
-        // Claves de autenticación
-        let publicKey = "4da961812496c30cf73ed692b494f315"
-        let privateKey = "d7fc2827797d7e47f6417dca83b3beeb4c5607ee"
+        let publicKey = "91876cd71efdc7d4d08056257a5dd7bf"
+        let privateKey = "4b31ba5c27608c34ec0d47763e976f32001d59e6"
+        let baseURL = "https://gateway.marvel.com/v1/public/characters"
         
-        // Timestamp
+        
+        let configuration = URLSessionConfiguration.default
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        let session = URLSession(configuration: configuration)
+        
+        // Construir la URL con las claves y otros parámetros
         let timestamp = String(Date().timeIntervalSince1970)
-        
-        // Construir el hash para la autenticación
-        let hash = "hashInput".hashed(using: Insecure.MD5.self)
-        print(hash)
-        
-        // URL de la API que proporciona los personajes
-        let baseURL = "https://gateway.marvel.com:443/v1/public/characters"
-        let limit = 20
-        let apiKeyParam = "apikey=\(publicKey)"
-        let timestampParam = "ts=\(timestamp)"
-        let hashParam = "hash=\(hash)"
-        let limitParam = "limit=\(limit)"
-        
-        let urlAPI = "\(baseURL)?\(apiKeyParam)&\(timestampParam)&\(hashParam)&\(limitParam)"
-        
-        guard let url = URL(string: urlAPI) else {
-            print("URL no válida")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { [weak self] (data, response, error) in
-            guard let self = self else { return }
-            
-            if let data = data {
-                do {
-                    // Decodificar los datos JSON
-                    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                       let data = json["data"] as? [String: Any],
-                       let results = data["results"] as? [[String: Any]] {
-                        
-                        for result in results {
-                            if let name = result["name"] as? String {
-                                let nuevoPersonaje = Personaje(name: name)
-                                self.personajes.append(nuevoPersonaje)
-                            }
-                        }
-                        
-                        DispatchQueue.main.async {
-                            self.tabla.reloadData()
-                        }
-                    }
-                } catch let error as DecodingError {
-                    // Manejar errores específicos de decodificación
-                    switch error {
-                    case .keyNotFound(let key, let context):
-                        print("Error de decodificación: Clave no encontrada - \(key), Contexto: \(context)")
-                    case .typeMismatch(let type, let context):
-                        print("Error de decodificación: Tipo incorrecto - \(type), Contexto: \(context)")
-                    case .valueNotFound(let value, let context):
-                        print("Error de decodificación: Valor no encontrado - \(value), Contexto: \(context)")
-                    default:
-                        print("Error de decodificación: \(error)")
-                    }
-                } catch {
-                    // Manejar otros errores
-                    print("Error: \(error)")
+        let hash = "\(timestamp)\(privateKey)\(publicKey)".md5()
+        let urlString = "\(baseURL)?apikey=\(publicKey)&ts=\(timestamp)&hash=\(hash)"
+        if let url = URL(string: urlString) {
+            // Crear y configurar la sesión de URLSession
+            let session = URLSession.shared
+            let task = session.dataTask(with: url) { (data, response, error) in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                } else if let data = data {
+                    // Procesar los datos obtenidos
+                    // Puedes implementar el código necesario para manejar la respuesta de la API
+                    print("Data received: \(data)")
                 }
             }
-        }.resume()
+            // Iniciar la tarea
+            task.resume()
+        } else {
+            print("Invalid URL")
+        }
     }
 }
 
-// Extensión para calcular el hash MD5
+// Función para calcular el hash MD5
 extension String {
-    func hashed(using algorithm: any HashFunction.Type) -> String {
-        let inputData = Data(self.utf8)
-        let hashedData = algorithm.hash(data: inputData)
-        return hashedData.map { String(format: "%02hhx", $0) }.joined()
+    func md5() -> String {
+        let messageData = self.data(using:.utf8)!
+        var digestData = Data(count: Int(CC_MD5_DIGEST_LENGTH))
+        
+        _ = digestData.withUnsafeMutableBytes { digestBytes -> UInt8 in
+            messageData.withUnsafeBytes { messageBytes -> UInt8 in
+                if let baseAddress = messageBytes.baseAddress, let data = digestBytes.bindMemory(to: UInt8.self).baseAddress {
+                    let length = CC_LONG(messageData.count)
+                    CC_MD5(baseAddress, length, data)
+                }
+                return 0
+            }
+        }
+        
+        // Convertir el resultado de CC_MD5 a una cadena hexadecimal
+        let hash = digestData.map { String(format: "%02hhx", $0) }.joined()
+        return hash
+    
     }
 }
+
 
 // Métodos SearchBar
 extension TableViewViewController: UISearchBarDelegate {
@@ -127,8 +108,14 @@ extension TableViewViewController: UISearchBarDelegate {
                 }
             }
         }
+        
         // Actualizar la tabla constantemente cuando se escriba el texto.
-        self.tabla.reloadData()
+        DispatchQueue.main.async {
+            // Actualizar la interfaz aquí
+            self.tabla.reloadData()
+        }
+
+      
     }
 }
 
